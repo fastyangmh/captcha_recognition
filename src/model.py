@@ -37,6 +37,7 @@ class DEEPCNN(nn.Module):
             in_features=hidden_dim, out_features=out_dim)
         self.leakyrelu = nn.LeakyReLU(inplace=True)
         self.softmax = nn.Softmax(dim=2)
+        self.sigmoid = nn.Sigmoid()
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
