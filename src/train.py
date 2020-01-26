@@ -1,6 +1,7 @@
 # import
-from scipy.misc import imread
+from imageio import imread
 import numpy as np
+import string
 from os.path import basename, join
 from glob import glob
 import torch
@@ -58,18 +59,12 @@ def evaluation(dataloader, model, decoder):
 
 class onehotencoder:
     def __init__(self,):
-        '''
-        the ascii code dec 0~9 is range(48,58), and a~z is range(97,123)
-        '''
         self.alphabet_dict = {}
-        for i in range(48, 58):
-            self.alphabet_dict[chr(i)] = None
-        for i in range(97, 123):
-            self.alphabet_dict[chr(i)] = None
-        for k, v in zip(self.alphabet_dict.keys(), np.identity(36)):
+        keys = list(string.digits)+list(string.ascii_lowercase)
+        values = np.identity(len(keys))
+        for k, v in zip(keys, values):
             self.alphabet_dict[k] = v
-        for i, k in enumerate(list(self.alphabet_dict.keys())):
-            self.alphabet_dict[i] = k
+            self.alphabet_dict[np.argmax(v)] = k
 
     def encoding(self, label):
         encode = []
@@ -108,7 +103,8 @@ if __name__ == "__main__":
     label = []
     files = glob(join(data_path, '*.png'))
     for f in files:
-        data.append(imread(f, mode='L'))  # 'L' (8-bit pixels, black and white)
+        # 'L' (8-bit pixels, black and white)
+        data.append(imread(f, pilmode='L'))
         label.append(basename(f)[:-4])
     data = np.array(data)
     label = np.array(label)
@@ -130,10 +126,10 @@ if __name__ == "__main__":
     model = DEEPCNN(in_channels=[1, 2, 4], out_channels=[2, 4, 8], kernel_size=[
                     1, 2, 4], Hin=50, Win=200, hidden_dim=50, n_hidden=1, out_dim=5)
     optimizer = optim.Adam(model.parameters(), lr=lr)
-    criterion = nn.MSELoss()
+    criterion = nn.BCELoss()
     if USE_CUDA:
         model = model.cuda()
-
+'''
     # train
     history = train_loop((train_loader, None), model,
                          optimizer, criterion, epochs)
@@ -143,3 +139,4 @@ if __name__ == "__main__":
     print('Training dataset accuracy: {}'.format(round(np.mean(train_acc), 4)))
     test_pred, test_acc = evaluation(test_loader, model, ohe)
     print('Test dataset accuracy: {}'.format(round(np.mean(test_acc), 4)))
+'''
